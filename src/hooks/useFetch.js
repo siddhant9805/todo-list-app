@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
+import { api } from "../api";
 
-export function useFetch(url, setData) {
+// path example: "/tasks"
+export function useFetch(path, setData) {
     const [isloading, setLoading] = useState(false)
     const [error, setError] = useState(null)
     const [trigger, setTrigger] = useState(0)
 
-    // Function to manually trigger a re-fetch
     const refetch = () => {
         setTrigger(prev => prev + 1)
     }
@@ -14,8 +15,7 @@ export function useFetch(url, setData) {
         async function api_call() {
             setLoading(true)
             try {
-                const rep = await fetch(url)
-                const data = await rep.json()
+                const { data } = await api.get(path)
                 setData(data)
                 setError(null)
             } catch (err) {
@@ -24,7 +24,7 @@ export function useFetch(url, setData) {
             setLoading(false)
         }
         api_call()
-    }, [url, trigger])
-        
+    }, [path, trigger])
+
     return [isloading, error, refetch]
 }
