@@ -1,13 +1,15 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useFetch } from '../hooks/useFetch'
 import { api } from '../api'
 import { useAuth } from '../context/AuthContext'
 
 export function Todos() {
+
     const { email, logout } = useAuth()
     const [tasks, setTasks] = useState([])
     const [input, setInput] = useState('')
     const [update, setUpdate] = useState(null)
+    const inputRef = useRef(null)
 
     const [isloading, error, refetch] = useFetch('/tasks', setTasks)
 
@@ -16,7 +18,6 @@ export function Todos() {
         const taskMessage = input.trim()
         if (!taskMessage) return
         const previous = tasks
-        setInput('')
 
         try {
             if (update === null) {
@@ -34,9 +35,15 @@ export function Todos() {
             setTasks(previous)
             alert('Could not save. Please try again.')
         }
+        setInput('')
     }
 
     async function deleteTask(id) {
+        if (update === id) {
+            setUpdate(null)
+            setInput('')
+        }
+
         const previous = tasks
         setTasks(tasks.filter((t) => t.id !== id))
         try {
@@ -50,6 +57,7 @@ export function Todos() {
     function updateTask(id, message) {
         setUpdate(id)
         setInput(message)
+        inputRef.current?.focus()
     }
 
     if (error) {
@@ -74,7 +82,7 @@ export function Todos() {
                 </div>
                 <div className="user-bar">
                     <button onClick={refetch} disabled={isloading} className="refresh-btn" title="Refresh">
-                        {isloading ? '...' : '🔄'}
+                        {isloading ? '...' : '⟳'}
                     </button>
                     <button onClick={logout} className="refresh-btn logout-btn">Logout</button>
                 </div>
@@ -82,6 +90,7 @@ export function Todos() {
 
             <form onSubmit={submit}>
                 <input
+                    ref={inputRef}
                     type="text"
                     name="task"
                     value={input}
